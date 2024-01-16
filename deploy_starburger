@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+cd ../opt/django_star_burger/
+git pull
+python3 -m venv .venv
+source ./.venv/bin/activate
+npm ci --dev
+./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+pip install -r requirements.txt
+python3 manage.py collectstatic --noinput
+python3 manage.py migrate --noinput
+systemctl daemon-reload
+git_commit=$(git show -s --format=%H)
+
+cd ~
+echo "{\"revision\":\"$git_commit\",\"environment\":\"production\",\"status\":\"succeeded\",\"local_username\":\"$USER\"}" |  \
+  http POST https://api.rollbar.com/api/1/deploy \
+  X-Rollbar-Access-Token:$(cat .env) \
+  accept:application/json \
+  content-type:application/json
+
+echo "Деплой завершен успешно"

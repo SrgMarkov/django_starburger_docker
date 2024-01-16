@@ -1,0 +1,76 @@
+{% extends 'base_restaurateur_page.html' %}
+
+{% block title %}Необработанные заказы | Star Burger{% endblock %}
+
+{% block content %}
+  <center>
+    <h2>Необработанные заказы</h2>
+  </center>
+
+  <hr/>
+  <br/>
+  <br/>
+  <div class="container">
+   <table class="table table-responsive">
+    <tr>
+      <th>ID заказа</th>
+      <th>Статус заказа</th>
+      <th>Способ оплаты</th>
+      <th>Стоимость заказа</th>
+      <th>Клиент</th>
+      <th>Телефон</th>
+      <th>Адрес доставки</th>
+      <th>Комментарий к заказу</th>
+      <th>Статус ресторана</th>
+      <th>Ссылка на админку</th>
+    </tr>
+
+    {% for item in order_items %}
+      {% if item.show %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.status_display }}</td>
+          <td>{{ item.payment_method }}</td>
+          <td>{{ item.price }}</td>
+          <td>{{ item.customer }}</td>
+          <td>{{ item.phone }}</td>
+          <td>{{ item.address }}</td>
+          <td>
+            {% if item.comment %}
+              <details>
+                <summary>Раскрыть комментарий</summary>
+                {{ item.comment }}
+              </details>
+            {% endif %}
+          </td>
+          <td>
+            {% if not item.available_restaurants %}
+              <p>Нет доступных ресторанов для заказа</p>
+            {% else %}
+              <details>
+                {% if item.status_display == 'Новый' %}
+                  {% if item.available_restaurants == 'Ошибка определения координат' %}
+                    <summary>Ошибка определения координат</summary>
+                  {% else %}
+                    <summary>Заказ может быть приготовлен в:</summary>
+                    {% for name, address in item.available_restaurants.items %}
+                      <li>{{ name }} - {{ address }} км.</li>
+                    {%  endfor %}
+                  {% endif %}
+                {% elif item.status_display == 'Приготовление' %}
+                  <summary>Заказ готовится в:</summary>
+                  {{ item.cooking_restaurant }}
+                {% elif item.status_display == 'Доставка' %}
+                  <summary>Заказ доставляется из:</summary>
+                  {{ item.cooking_restaurant }}
+                {% endif %}
+              </details>
+            {% endif %}
+          </td>
+          <td><a href="{% url "admin:foodcartapp_order_change"	object_id=item.id %}?next={{ request.path|urlencode }}">Редактировать</td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+   </table>
+  </div>
+{% endblock %}
