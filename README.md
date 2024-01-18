@@ -18,9 +18,7 @@
 
 ## Как запустить dev-версию сайта
 
-Для запуска сайта нужно запустить **одновременно** бэкенд и фронтенд, в двух терминалах.
-
-### Как собрать бэкенд
+### Запуск проекта в docker контейнере
 
 Скачайте код:
 ```sh
@@ -44,6 +42,28 @@ cd django_starburger_docker
 
 [Установите Docker](https://docs.docker.com/engine/install/) и [Docker Compose](https://docs.docker.com/compose/install/) если этого ещё не сделали.
 
+Если на разработческом ПК не установлен сервер nginx, необходимо добавить в файл `docker-compose.yml` сервис `web`, который поднимет nginx в контейнере
+
+```
+...
+
+  web:
+    container_name: nginx_server
+    build: nginx
+    depends_on:
+      - backend
+    volumes:
+      - static:/opt/starburger/static/
+      - media:/opt/starburger/media/
+    ports:
+      - 80:80
+
+...
+```
+необходимые настройки для nginx уже прописаны в Dockerfile 
+
+dev версия запустится в 4 контейнерах в связке Nginx + django + postgres + nodejs
+
 Запустите проект командой:
 ```sh
 docker compose up -d
@@ -51,15 +71,23 @@ docker compose up -d
 
 Сайт будет доступен по адресу `localhost`
 
+логи работы сервисов можно посмотреть командой
+
+```sh
+docker compose logs
+```
 
 ## Как запустить prod-версию сайта
 
-Собрать фронтенд:
+На prod версии сайта не рекомендуется использовать nginx в контейнере. Таким образом связка Nginx и certbot уже должна быть настроена на сервере
 
+
+Запустите проект командой:
 ```sh
-./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+docker compose up -d
 ```
 
+настроить nginx config 
 
 ## Как обновить prod версию сайта
 

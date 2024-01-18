@@ -8,12 +8,16 @@ services:
       - db_data:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - django_starburger_docker
 
   frontend:
     container_name: parcel
     build: frontend
     volumes:
       - bundles:/opt/app/bundles
+    networks:
+      - django_starburger_docker
 
   backend:
     container_name: django
@@ -24,26 +28,21 @@ services:
     volumes:
       - bundles:/starburger/bundles
       - db_data:/starburger/db_data
-      - static:/starburger/static
-      - media:/starburger/media
+      - /var/www/starburger:/starburger/static
+      - /var/www/starburger:/starburger/media
     env_file:
       - .env
+    ports:
+      - 8080:8080
+    networks:
+      - host
+      - django_starburger_docker
     command: >
       bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && gunicorn -w 3 -b :8000 star_burger.wsgi:application"
-
-  web:
-    container_name: nginx_server
-    build: nginx
-    depends_on:
-      - backend
-    volumes:
-      - static:/opt/starburger/static/
-      - media:/opt/starburger/media/
-    ports:
-      - 80:80
 
 volumes:
   db_data:
   bundles:
-  static:
-  media:
+
+networks:
+  django_starburger_docker:
