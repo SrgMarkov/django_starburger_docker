@@ -87,15 +87,13 @@ docker compose logs
 docker compose up -d
 ```
 
-настроить nginx config 
-
 ## Как обновить prod версию сайта
 
 На сервер добавлен скрипт для обновления деплоя.
 
 Для работы скрипта необходимо создать в домашнем каталоге файл .env и прописать в него токен сервиса rollbar, после чего запустить скрипт
 ```sh
-./deploy_straburger
+./deploy_straburger_docker
 ```
 
 Пример работающего сайта можно посмотреть по [ссылке](https://silence-place.site)

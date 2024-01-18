@@ -1,14 +1,9 @@
 #!/bin/bash -e
 
-cd ../opt/django_star_burger/
+cd ../opt/django_starburger_docker/
+docker compose down
 git pull
-python3 -m venv .venv
-source ./.venv/bin/activate
-npm ci --dev
-./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
-pip install -r requirements.txt
-python3 manage.py collectstatic --noinput
-python3 manage.py migrate --noinput
+docker compose up -d --build
 systemctl daemon-reload
 git_commit=$(git show -s --format=%H)
 
