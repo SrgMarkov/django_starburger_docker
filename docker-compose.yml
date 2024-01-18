@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     networks:
-      - django_starburger_docker
+      - inner_network
 
   frontend:
     container_name: parcel
@@ -17,7 +17,7 @@ services:
     volumes:
       - bundles:/opt/app/bundles
     networks:
-      - django_starburger_docker
+      - inner_network
 
   backend:
     container_name: django
@@ -36,7 +36,7 @@ services:
       - 8080:8080
     networks:
       - host
-      - django_starburger_docker
+      - inner_network
     command: >
       bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && gunicorn -w 3 -b :8000 star_burger.wsgi:application"
 
@@ -45,4 +45,10 @@ volumes:
   bundles:
 
 networks:
-  django_starburger_docker:
+  host:
+    name: host
+    external: true
+  inner_network:
+    name: starburger_network
+    driver: bridge
+
