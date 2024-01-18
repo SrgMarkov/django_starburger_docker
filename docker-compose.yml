@@ -8,16 +8,12 @@ services:
       - db_data:/var/lib/postgresql/data
     env_file:
       - .env
-    networks:
-      - inner_network
 
   frontend:
     container_name: parcel
     build: frontend
     volumes:
       - bundles:/opt/app/bundles
-    networks:
-      - inner_network
 
   backend:
     container_name: django
@@ -28,27 +24,16 @@ services:
     volumes:
       - bundles:/starburger/bundles
       - db_data:/starburger/db_data
-      - /var/www/starburger:/starburger/static
-      - /var/www/starburger:/starburger/media
+      - /var/www/starburger/static:/starburger/static
+      - /var/www/starburger/media:/starburger/media
     env_file:
       - .env
     ports:
-      - 8080:8080
-    networks:
-      - host
-      - inner_network
+      - "127.0.0.1:8080:8080"
     command: >
-      bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && gunicorn -w 3 -b :8000 star_burger.wsgi:application"
+      bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && gunicorn -w 3 -b :8080 star_burger.wsgi:application"
 
 volumes:
   db_data:
   bundles:
-
-networks:
-  host:
-    name: host
-    external: true
-  inner_network:
-    name: starburger_network
-    driver: bridge
 
