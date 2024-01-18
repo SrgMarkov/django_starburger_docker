@@ -1,28 +1,49 @@
-version: "3.5"
+version: "3.9"
 
 services:
-  db:
+  postgresdb:
     image: postgres:12.0-alpine
     container_name: postgres_db
     volumes:
       - db_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB-test_k8s}
-      POSTGRES_USER: ${POSTGRES_USER-test_k8s}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD-OwOtBep9Frut}
+    env_file:
+      - .env
 
   frontend:
     container_name: parcel
     build: frontend
+    volumes:
+      - bundles:/opt/app/bundles
 
-  bakcend:
+  backend:
     container_name: django
-    build: bakcend
+    build: backend
     depends_on:
-      - db
+      - postgresdb
       - frontend
+    volumes:
+      - bundles:/starburger/bundles
+      - db_data:/starburger/db_data
+      - static:/starburger/static
+      - media:/starburger/media
+    env_file:
+      - .env
+    command: >
+      bash -c "./manage.py migrate && ./manage.py collectstatic --noinput && gunicorn -w 3 -b :8000 star_burger.wsgi:application"
 
+  web:
+    container_name: nginx_server
+    build: nginx
+    depends_on:
+      - backend
+    volumes:
+      - static:/opt/starburger/static/
+      - media:/opt/starburger/media/
+    ports:
+      - 80:80
 
 volumes:
   db_data:
-  staticfiles:
+  bundles:
+  static:
+  media:
